@@ -69,10 +69,8 @@ def stable(node_data, changed_files):
 
     for file in set(changed_files) & set(file_data):
         for nodeid, checksums in file_data[file].items():
-            if set(checksums) - set(changed_files[file].checksums): #the nodeid requires checksums which disapeared from
-                                                                    #the filesystem => the nodeid is "affected"
-                stable_nodes.pop(nodeid, None)
-                stable_files -= {nodeid.split('::', 1)[0], file}
+            stable_nodes.pop(nodeid, None)
+            stable_files -= {nodeid.split('::', 1)[0], file}
 
     return stable_nodes, stable_files
 
