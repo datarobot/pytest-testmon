@@ -168,16 +168,22 @@ class TestmonDeselect(object):
                 self.config.hook.pytest_runtest_logreport(report=test_report)
 
     def pytest_report_header(self, config):
-        changed_files = ",".join(self.testmon_data.source_tree.changed_files)
-        if changed_files == '' or len(changed_files) > 100:
-            changed_files = len(self.testmon_data.source_tree.changed_files)
-        active_message = "testmon={}, changed files: {}, skipping collection of {} files".format(
-            config.getoption('testmon'),
-            changed_files, len(self.testmon_data.stable_files))
+        variant = ''
         if self.testmon_data.variant:
-            return active_message + ", run variant: {}".format(self.testmon_data.variant)
+            variant = ", run variant: {}, ".format(self.testmon_data.variant)
+        changed_files = "\n".join(self.testmon_data.source_tree.changed_files)
+        if not changed_files:
+            changed_files = '0'
+        elif len(changed_files) > 100 and config.getoption("verbose") < 1:
+            changed_files = len(self.testmon_data.source_tree.changed_files)
         else:
-            return active_message + "."
+            changed_files = '\n' + changed_files + '\n'
+        return "testmon: testmon={}, skipping collection of {} files, {}changed files: {}".format(
+            config.getoption('testmon') or config.getoption('testmon_readonly'),
+            len(self.testmon_data.stable_files),
+            variant,
+            changed_files,
+        )
 
     def pytest_ignore_collect(self, path, config):
         strpath = os.path.relpath(path.strpath, config.rootdir.strpath)
