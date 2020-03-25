@@ -62,15 +62,20 @@ def flip_dictionary(node_data):
     return files
 
 
-def stable(node_data, changed_files):
+def stable(node_data, changed_files, block_threshold=0):
     file_data = flip_dictionary(node_data)
     stable_nodes = dict(node_data)
     stable_files = set(file_data)
+    ignore_blocks = block_threshold < len(changed_files)
 
-    for file in set(changed_files) & set(file_data):
-        for nodeid, checksums in file_data[file].items():
-            stable_nodes.pop(nodeid, None)
-            stable_files -= {nodeid.split('::', 1)[0], file}
+    for changed_file in set(changed_files) & set(file_data):
+        for nodeid, checksums in file_data[changed_file].items():
+            # The nodeid requires checksums which disapeared from the
+            # filesystem => the nodeid is "affected"
+            checksums_differ = set(checksums) - set(changed_files[changed_file].checksums)
+            if ignore_blocks or checksums_differ:
+                stable_nodes.pop(nodeid, None)
+                stable_files -= {nodeid.split('::', 1)[0], changed_file}
 
     return stable_nodes, stable_files
 
@@ -86,12 +91,13 @@ class TestmonData(object):
     # If you change the SQLlite schema, you should bump this number
     DATA_VERSION = 4
 
-    def __init__(self, rootdir, variant=None):
+    def __init__(self, rootdir, variant=None, block_threshold=0):
 
         self.variant = variant if variant else 'default'
         self.rootdir = rootdir
         self.init_connection()
         self.node_data = {}
+        self.block_threshold = block_threshold
         self.reports = defaultdict(lambda: [])
 
     def init_connection(self):
@@ -246,8 +252,11 @@ class TestmonData(object):
         checksums = self._fetch_attribute('file_checksums', default={})
 
         self.source_tree = SourceTree(rootdir=self.rootdir, mtimes=mtimes, checksums=checksums)
-        self.stable_nodeids, self.stable_files = stable(self.node_data,
-                                                        self.source_tree.get_changed_files())
+        self.stable_nodeids, self.stable_files = stable(
+            self.node_data,
+            self.source_tree.get_changed_files(),
+            self.block_threshold,
+        )
 
 
 class Testmon(object):

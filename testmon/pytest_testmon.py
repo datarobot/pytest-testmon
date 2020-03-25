@@ -78,6 +78,12 @@ def pytest_addoption(parser):
         help="Top level directory of project",
         default=None
     )
+    group.addoption(
+        '--testmon-block-threshold',
+        help='Maximum number of files changed before disabling block level dependency checking',
+        type=int,
+        default=0
+    )
 
     parser.addini("run_variant_expression", "run variant expression",
                   default='')
@@ -95,9 +101,13 @@ def testmon_options(config):
 def init_testmon_data(config, read_source=True):
     if not hasattr(config, 'testmon_data'):
         variant = eval_variant(config.getini('run_variant_expression'))
+        
         config.project_dirs = config.getoption('project_directory') or [config.rootdir.strpath]
-        testmon_data = TestmonData(config.project_dirs[0],
-                                   variant=variant)
+        testmon_data = TestmonData(
+            config.project_dirs[0],
+            variant=variant,
+            block_threshold=config.getoption('testmon_block_threshold')
+        )
         testmon_data.read_data()
         if read_source:
             testmon_data.read_source()
