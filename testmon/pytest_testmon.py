@@ -306,12 +306,6 @@ class TestmonSelect:
 
     @pytest.mark.trylast
     def pytest_collection_modifyitems(self, session, config, items):
-        for item in items:
-            assert item.nodeid not in self.deselected_files, (
-                item.nodeid,
-                self.deselected_files,
-            )
-
         selected = []
         for item in items:
             if item.nodeid not in self.deselected_nodes:
