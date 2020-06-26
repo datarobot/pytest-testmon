@@ -159,6 +159,7 @@ def create_fingerprints(lines, special_blocks, coverage):
     line_idx = 0
     result = []
     while line_idx < len(lines):
+        line = lines[line_idx]
         line_idx += 1
         line = lines[line_idx - 1]
 
