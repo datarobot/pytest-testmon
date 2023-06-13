@@ -1,5 +1,6 @@
 import codecs
 import os
+
 from setuptools import setup
 
 with codecs.open("README.md", "r", "utf-8") as fh:

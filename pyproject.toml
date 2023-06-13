@@ -5,17 +5,7 @@ write_to = "pkg/_version.py"
 line-length = 120
 skip-string-normalization = true
 target-version = ['py37']
-exclude = '''
-(
-    ^/\.git/
-  | ^/\.tox/
-  | ^\.eggs/
-  | ^/docs/
-  | ^/migrations/
-  | ^/tests/functional/fixture_data/garbage_suites/bad_syntax.py
-)
-'''
-
+extend-exclude = '''.*eggs/.*'''
 
 [tool.isort]
 # Requires isort>5 for profile support
@@ -24,7 +14,7 @@ profile = "black"
 # Overrides for the profile:
 line_length = 120
 force_single_line = true
-skip_glob = ["migrations/*", "docs/*"]
+skip_glob = ["migrations/*", "docs/*", "eggs/*"]
 
 [tool.pylint.MASTER]
 # A comma-separated list of package or module names from where C extensions may
