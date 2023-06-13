@@ -293,7 +293,7 @@ class TestmonSelect:
         self.original_files.add(strpath)
         return strpath in self.deselected_files or None
 
-    @pytest.mark.trylast
+    @pytest.hookimpl(trylast=True)
     def pytest_collection_modifyitems(self, session, config, items):
         selected = []
         for item in items:
